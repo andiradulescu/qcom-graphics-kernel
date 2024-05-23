@@ -554,7 +554,7 @@ static size_t _iommu_map_page_to_range(struct iommu_domain *domain,
 
 	while (range) {
 		int ret = iommu_map(domain, addr, page_to_phys(page),
-			PAGE_SIZE, prot);
+			PAGE_SIZE, prot, GFP_KERNEL); // added GFP_KERNEL
 		if (ret) {
 			iommu_unmap(domain, gpuaddr, mapped);
 			return 0;
@@ -575,7 +575,7 @@ static size_t _iommu_map_sg(struct iommu_domain *domain, u64 gpuaddr,
 	if (gpuaddr & (1ULL << 48))
 		gpuaddr |= 0xffff000000000000;
 
-	return iommu_map_sg(domain, gpuaddr, sgt->sgl, sgt->orig_nents, prot);
+	return iommu_map_sg(domain, gpuaddr, sgt->sgl, sgt->orig_nents, prot, GFP_KERNEL); // added GFP_KERNEL
 }
 
 static int

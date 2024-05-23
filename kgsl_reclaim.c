@@ -380,13 +380,7 @@ kgsl_reclaim_shrink_count_objects(struct shrinker *shrinker,
 	return count_reclaimable;
 }
 
-/* Shrinker callback data*/
-static struct shrinker kgsl_reclaim_shrinker = {
-	.count_objects = kgsl_reclaim_shrink_count_objects,
-	.scan_objects = kgsl_reclaim_shrink_scan_objects,
-	.seeks = DEFAULT_SEEKS,
-	.batch = 0,
-};
+static struct shrinker *kgsl_reclaim_shrinker;
 
 void kgsl_reclaim_proc_private_init(struct kgsl_process_private *process)
 {
@@ -399,20 +393,27 @@ void kgsl_reclaim_proc_private_init(struct kgsl_process_private *process)
 
 int kgsl_reclaim_init(void)
 {
-	int ret;
-
 	/* Initialize shrinker */
-	ret = register_shrinker(&kgsl_reclaim_shrinker);
-	if (ret)
+	kgsl_reclaim_shrinker = shrinker_alloc(0, "msm-kgsl_reclaim");
+	if (!kgsl_reclaim_shrinker) {
 		pr_err("kgsl: reclaim: Failed to register shrinker\n");
-	else
-		INIT_WORK(&reclaim_work, kgsl_reclaim_background_work);
+		return -ENOMEM;
+	}
 
-	return ret;
+	kgsl_reclaim_shrinker->count_objects = kgsl_reclaim_shrink_count_objects;
+	kgsl_reclaim_shrinker->scan_objects = kgsl_reclaim_shrink_scan_objects;
+	kgsl_reclaim_shrinker->seeks = DEFAULT_SEEKS;
+	kgsl_reclaim_shrinker->batch = 0;
+
+	shrinker_register(kgsl_reclaim_shrinker);
+
+	INIT_WORK(&reclaim_work, kgsl_reclaim_background_work);
+
+	return 0;
 }
 
 void kgsl_reclaim_close(void)
 {
 	/* Unregister shrinker */
-	unregister_shrinker(&kgsl_reclaim_shrinker);
+	shrinker_free(kgsl_reclaim_shrinker);
 }

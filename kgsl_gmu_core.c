@@ -190,7 +190,7 @@ int gmu_core_map_memdesc(struct iommu_domain *domain, struct kgsl_memdesc *memde
 
 	if (!memdesc->pages) {
 		mapped = iommu_map_sg(domain, gmuaddr, memdesc->sgt->sgl,
-			memdesc->sgt->nents, attrs);
+			memdesc->sgt->nents, attrs, GFP_KERNEL); // added GFP_KERNEL
 	} else {
 		struct sg_table sgt = { 0 };
 		int ret;
@@ -201,7 +201,7 @@ int gmu_core_map_memdesc(struct iommu_domain *domain, struct kgsl_memdesc *memde
 		if (ret)
 			return ret;
 
-		mapped = iommu_map_sg(domain, gmuaddr, sgt.sgl, sgt.nents, attrs);
+		mapped = iommu_map_sg(domain, gmuaddr, sgt.sgl, sgt.nents, attrs, GFP_KERNEL); // added GFP_KERNEL
 		sg_free_table(&sgt);
 	}
 

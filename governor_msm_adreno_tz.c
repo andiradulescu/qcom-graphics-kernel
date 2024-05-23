@@ -17,7 +17,8 @@
 #include <asm/cacheflush.h>
 #include <linux/qtee_shmbridge.h>
 
-#include "governor.h"
+// #include "governor.h"
+#include "../../devfreq/governor.h"
 #include "msm_adreno_devfreq.h"
 
 static DEFINE_SPINLOCK(tz_lock);
